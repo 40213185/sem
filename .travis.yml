@@ -4,7 +4,7 @@ language: java
 
 services:
     - docker
-    
+
 after_success:
     - docker network create --driver bridge se-methods
     - docker pull mongo
