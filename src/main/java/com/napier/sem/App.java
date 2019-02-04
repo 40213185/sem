@@ -6,10 +6,31 @@ public class App
 {
     public static void main(String[] args)
     {
+        // Create new Application
+        App a = new App();
+
+        // Connect to database
+        a.connect();
+
+        // Disconnect from database
+        a.disconnect();
+
+    }
+
+    /**
+     * Connection to MySQL database.
+     */
+    private Connection con = null;
+
+    /**
+     * Connect to the MySQL database.
+     */
+    public void connect()
+    {
         try
         {
-            //load database driver
-            Class.forName("com.mysql.dbc.Driver");
+            // Load Database driver
+            Class.forName("com.mysql.jdbc.Driver");
         }
         catch (ClassNotFoundException e)
         {
@@ -17,22 +38,17 @@ public class App
             System.exit(-1);
         }
 
-        // Connection to the database 'employees'
-        Connection con = null;
-        int retries = 100;
+        int retries = 10;
         for (int i = 0; i < retries; ++i)
         {
             System.out.println("Connecting to database...");
             try
             {
-                //wait a bit for db to start
+                // Wait a bit for db to start
                 Thread.sleep(30000);
-                //Connect to to database
+                // Connect to database
                 con = DriverManager.getConnection("jdbc:mysql://db:3306/employees?useSSL=false", "root", "example");
                 System.out.println("Successfully connected");
-                //wait a bit
-                Thread.sleep(10000);
-                //exit for loop
                 break;
             }
             catch (SQLException sqle)
@@ -42,19 +58,28 @@ public class App
             }
             catch (InterruptedException ie)
             {
-                System.out.println("Thread interrupted? Should not be happening...");
+                System.out.println("Thread interrupted? Should not happen.");
             }
         }
-        if(con != null)
+    }
+
+    /**
+     * Disconnect from the MySQL database.
+     */
+    public void disconnect()
+    {
+        if (con != null)
         {
             try
             {
-                //close connection
+                // Close connection
                 con.close();
-            } catch (Exception e)
+            }
+            catch (Exception e)
             {
                 System.out.println("Error closing connection to database");
             }
         }
     }
+
 }
