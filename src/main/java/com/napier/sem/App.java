@@ -1,31 +1,60 @@
 package com.napier.sem;
 
-//import from mongoDB
-import com.mongodb.MongoClient;
-import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.MongoCollection;
-import org.bson.Document;
+import java.sql.*;
 
 public class App
 {
     public static void main(String[] args)
     {
-        //connect to mongoDB on local system - using port 27000 for now
-        MongoClient mongoClient = new MongoClient("mongo-dbserver");
-        //get a db - will create when using
-        MongoDatabase database = mongoClient.getDatabase("mydb");
-        //now get collection from db
-        MongoCollection<Document> collection = database.getCollection("test");
-        //Create new doc to store ??
-        Document doc = new Document("name", "Ryan McLoughlin")
-                .append("class", "Software Engineering Methods")
-                .append("Year","2018/19")
-                .append("result,", new Document("CW",95).append("EX", 85));
-        //add doc to collection
-        collection.insertOne(doc);
+        try
+        {
+            //load database driver
+            Class.forName("com.mysql.dbc.Driver");
+        }
+        catch (ClassNotFoundException e)
+        {
+            System.out.println("Could not load SQL driver");
+            System.exit(-1);
+        }
 
-        //check doc in collection
-        Document myDoc = collection.find().first();
-        System.out.println(myDoc.toJson());
+        // Connection to the database 'employees'
+        Connection con = null;
+        int retries = 100;
+        for (int i = 0; i < retries; ++i)
+        {
+            System.out.println("Connecting to database...");
+            try
+            {
+                //wait a bit for db to start
+                Thread.sleep(30000);
+                //Connect to to database
+                con = DriverManager.getConnection("jdbc:mysql://db:3306/employees?useSSL=false", "root", "example");
+                System.out.println("Successfully connected");
+                //wait a bit
+                Thread.sleep(10000);
+                //exit for loop
+                break;
+            }
+            catch (SQLException sqle)
+            {
+                System.out.println("Failed to connect to database attempt " + Integer.toString(i));
+                System.out.println(sqle.getMessage());
+            }
+            catch (InterruptedException ie)
+            {
+                System.out.println("Thread interrupted? Should not be happening...");
+            }
+        }
+        if(con != null)
+        {
+            try
+            {
+                //close connection
+                con.close();
+            } catch (Exception e)
+            {
+                System.out.println("Error closing connection to database");
+            }
+        }
     }
 }
