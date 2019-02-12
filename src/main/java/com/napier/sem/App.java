@@ -11,6 +11,10 @@ public class App
 
         // Connect to database
         a.connect();
+        //get employee
+        Employee emp = a.getEmployee(255530);
+        //display results
+        a.displayEmployee(emp);
 
         // Disconnect from database
         a.disconnect();
@@ -32,7 +36,7 @@ public class App
             // Load Database driver
             Class.forName("com.mysql.jdbc.Driver");
         }
-        catch (ClassNotFoundException e)
+        catch (ClassNotFoundException ex)
         {
             System.out.println("Could not load SQL driver");
             System.exit(-1);
@@ -90,9 +94,16 @@ public class App
             Statement stmt = con.createStatement();
             // Create string for SQL statement
             String strSelect =
-                    "SELECT emp_no, first_name, last_name "
-                            + "FROM employees "
-                            + "WHERE emp_no = " + ID;
+                    //IF(employees.emp_no = dept_manager.emp_no,"YES","NO") AS
+                    "SELECT employees.emp_no, employees.first_name, employees.last_name, titles.title, salaries.salary, departments.dept_name, IF(employees.emp_no = dept_manager.emp_no,\"YES\",\"NO\") AS manager "
+                            + "FROM employees JOIN titles ON employees.emp_no = titles.emp_no "
+                            + "JOIN salaries ON titles.emp_no = salaries.emp_no "
+                            + "JOIN  dept_manager  ON salaries.emp_no = dept_manager.emp_no "
+                            + "JOIN departments ON dept_manager.dept_no = departments.dept_no "
+                            + "WHERE employees.emp_no = " + ID
+                            + " AND titles.to_date = 9999-01-01"
+                            + " AND salaries.to_date = 9999-01-01"
+                            + " AND dept_manager.to_date = 9999-01-01";
             // Execute SQL statement
             ResultSet rset = stmt.executeQuery(strSelect);
             // Return new employee if valid.
@@ -103,6 +114,11 @@ public class App
                 emp.emp_no = rset.getInt("emp_no");
                 emp.first_name = rset.getString("first_name");
                 emp.last_name = rset.getString("last_name");
+                emp.title = rset.getString("title");
+                emp.salary = rset.getInt("salary");
+                emp.dept_name = rset.getString("dept_name");
+                emp.manager = rset.getString("manager");
+
                 return emp;
             }
             else
@@ -116,4 +132,19 @@ public class App
         }
     }
 
+    public void displayEmployee(Employee emp)
+    {
+        if (emp != null)
+        {
+            System.out.println(
+                    emp.emp_no + " "
+                            + emp.first_name + " "
+                            + emp.last_name + "\n"
+                            + emp.title + "\n"
+                            + "Salary:" + emp.salary + "\n"
+                            + emp.dept_name + "\n"
+                            + "Manager: " + emp.manager + "\n"
+                            +"*************Up to date**********");
+        }
+    }
 }
